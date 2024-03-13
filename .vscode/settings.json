@@ -1,0 +1,10 @@
+{
+    "pixelbyte.love2d.path": "D:\\Games\\love2d\\LOVE\\love.exe",
+    "pixelbyte.love2d.srcDir": ".",
+    "Lua.workspace.library": [
+        "${3rd}/love2d/library"
+    ],
+    "pixelbyte.love2d.debug": true,
+    "Lua.runtime.version": "LuaJIT"
+    
+}
