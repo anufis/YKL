@@ -3,6 +3,7 @@
 ---@field y integer
 ---@field hp integer
 ---@field maxhp integer
+---@field sprite love.Image
 Entity = Class("Entity")
 
 function Entity:create()
