@@ -2,8 +2,11 @@ local tilemap = {}
 
 ---@class Tile: Object
 ---@field tex love.Image
+---@field scalex float
+---@field scaley float
 Tile = Class("Tile")
 
+---@type table<string,love.Image>
 local images = {}
 
 ---@return Tile
@@ -13,11 +16,13 @@ function Tile:create(fileName)
         images[fileName] = love.graphics.newImage(fileName)
     end
     self.tex = images[fileName]
+    self.scalex = 128 / images[fileName]:getWidth()
+    self.scaley = 128 / images[fileName]:getHeight()
     return self
 end
 
 function Tile:draw(x, y)
-    love.graphics.draw(self.tex, x, y)
+    love.graphics.draw(self.tex, x, y, 0, self.scalex, self.scaley)
 end
 
 Tile.default = Tile:create()
@@ -29,6 +34,9 @@ Tile.default = Tile:create()
 ---@field canvas love.Canvas
 ---@field cameraX integer
 ---@field cameraY integer
+---@field globalX integer
+---@field globalY integer
+---@field size Vector
 Tilemap = Class("Tilemap")
 
 ---@return Tilemap
@@ -46,7 +54,7 @@ end
 
 local rndList = {
     "Gra//Tile//Grass.png",
-    "Gra//Tile//Rock.png"
+    "Gra//Tile//Rock2.png"
 }
 
 function Tilemap:generate()
@@ -65,18 +73,24 @@ function Tilemap:prepare(x, y)
     if self.canvas then
         self.canvas:release()
     end
-    self.canvas = love.graphics.newCanvas(128 * 30, 128 * 30)
+    local sizex, sizey = Camera.getTilesAmount()
+    sizex, sizey = 1 + math.floor(sizex / 2), 1 + math.floor(sizey / 2)
+    self.globalX = 128 * (x - sizex)
+    self.globalY = 128 * (y - sizey)
+    self.size = {sizex * 2, sizey * 2}
+    self.canvas = love.graphics.newCanvas(256 * sizex, 256 * sizey)
     love.graphics.setCanvas(self.canvas)
-    for i = x - 15, x + 14 do
-        for j = y - 15, y + 14 do
-            if self.tile[i][j] then
-                self.tile[i][j]:draw(128 * (i - x + 15), 128 * (j - y + 15))
+    for i = 0, sizex * 2 do
+        for j = 0, sizey * 2 do
+            if self.tile[x - sizex + i][y - sizey + j] then
+                self.tile[x - sizex + i][y - sizey + j]:draw(128 * i, 128 * j)
             else
-                Tile.default:draw(128 * (i - x + 15), 128 * (j - y + 15))
+                Tile.default:draw(128 * i, 128 * j)
             end
         end
     end
     love.graphics.setCanvas()
+    love.graphics.reset()
 end
 
 function Tilemap:get(x, y)
@@ -84,11 +98,13 @@ function Tilemap:get(x, y)
 end
 
 function Tilemap:draw()
-    if not self.canvas or Player.x ~= self.cameraX or Player.y ~= self.cameraY then
+    local sizex, sizey = Camera.getTilesAmount()
+    sizex, sizey = 1 + math.floor(sizex / 2), 1 + math.floor(sizey / 2)
+    if not self.canvas or Player.x ~= self.cameraX or Player.y ~= self.cameraY or self.size[1] ~= 2 * sizex or self.size[2] ~= 2 * sizey then
         self:prepare(Player.x, Player.y)
     end
-    love.graphics.translate(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
     love.graphics.scale(Camera.scale, Camera.scale)
-    love.graphics.draw(self.canvas, -15 * 128, -15 * 128)
+    love.graphics.translate(-Camera.x, -Camera.y)
+    love.graphics.draw(self.canvas, self.globalX, self.globalY)
     love.graphics.origin()
 end

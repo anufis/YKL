@@ -30,7 +30,7 @@ local function drawBackground()
 end
 
 do
-    TestMap = Tilemap:create(500, 500)
+    TestMap = Tilemap:create(50, 50)
     TestMap:generate()
 end
 

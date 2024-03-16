@@ -3,6 +3,8 @@
 ---@field duration float
 ---@field step integer
 ---@field dt float
+---@field sizex integer
+---@field sizey integer
 Sprite = Class('Sprite')
 
 ---@type table
@@ -16,8 +18,8 @@ local sprite = setmetatable({}, {
 ---@return love.Image, love.Quad[]
 local function create(fileName, frames)
     local img = love.graphics.newImage(fileName)
-    local p = img:getWidth() / frames
     local h = img:getHeight()
+    local p = img:getWidth() / frames
     local t = {}
     for i = 0, frames - 1 do
         ---@diagnostic disable-next-line: missing-parameter, param-type-mismatch
@@ -41,10 +43,11 @@ function Sprite:create(fileName, frames, duration)
     self.duration = duration / frames
     self.step = 0
     self.dt = self.duration
+    self.sizex, self.sizey = self.frames[1]:getTextureDimensions()
     return self
 end
 
----@return love.Quad
+---@return love.Quad, integer, integer
 function Sprite:getAnim()
     self.dt = self.dt + love.timer.getDelta()
     if self.dt > self.duration then
@@ -54,5 +57,5 @@ function Sprite:getAnim()
         end
         self.dt = self.dt - self.duration
     end
-    return self.frames[self.step]
+    return self.frames[self.step], self.sizex, self.sizey
 end
